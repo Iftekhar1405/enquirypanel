@@ -1,21 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* globals.css */
+button:hover {
+  background-color: #c53030; /* red.600 */
+  opacity: 0.9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+input:hover {
+  background-color: #123a80; /* gray.600 */
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+select:hover {
+  background-color: #9b2c2c; /* red.900 */
+}
+body{
+  background-color: purple;
 }
