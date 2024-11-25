@@ -1,52 +1,85 @@
 import {
   Box,
+  Button,
   FormControl,
   FormLabel,
-  Input,
-  Textarea,
-  Button,
   Grid,
   GridItem,
-  useToast,
+  Input,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
+  MenuList,
+  Radio,
+  RadioGroup,
+  Stack,
+  Text,
+  Textarea,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useForm, Controller } from "react-hook-form";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
+
+const states = [
+  { state: "Rajasthan", district: ["Jaipur", "Kota", "Ajmer"] },
+  { state: "Chhattisgarh", district: ["Raipur", "Bilaspur", "Ambikapur"] },
+];
+const country = [
+  "China",
+  "India",
+  "USA",
+  "Indonesia",
+  "Brazil",
+  "Russia",
+  "Japan",
+  "Mexico",
+  "Nigeria",
+  "Pakistan",
+  "Germany",
+  "Philippines",
+  "Vietnam",
+  "Turkey",
+  "United Kingdom",
+  "Egypt",
+  "France",
+  "Thailand",
+  "Italy",
+  "South Korea",
+];
 
 const EnquiryForm = () => {
   const { handleSubmit, register, control, reset } = useForm();
   const toast = useToast();
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedDist, setSelectedDist] = useState("");
 
   const onSubmit = async (data) => {
-    console.log(data);
+    // console.log(data);
     try {
-      const res = await axios.post('http://localhost:5000/enquiry', data);
-  
+      const res = await axios.post("http://localhost:5000/enquiry", data);
+
       toast({
         title: "Enquiry Submitted",
-        description: "Form data has been logged successfully.",
+        description: "Form data has been submitted successfully.",
         status: "success",
         duration: 3000,
         isClosable: true,
       });
-  
-      reset(); // Reset the form after submission
+
+      reset();
     } catch (error) {
       toast({
         title: "Enquiry not submitted",
-        description: "Form data has not been logged successfully.",
-        status: "error",  // Set to 'error' to match error state
+        description: "Form data has not been submitted successfully.",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
       console.error("Submission Error:", error.response || error.message);
     }
   };
-  
 
   const gradeOptions = [
     { value: "LKG", label: "LKG" },
@@ -76,19 +109,24 @@ const EnquiryForm = () => {
       as="form"
       onSubmit={handleSubmit(onSubmit)}
       bg="gray.800"
-      p={8}
       rounded="md"
       w="full"
       color="white"
       boxShadow="lg"
-      maxW="container.md"
       m="auto"
     >
-      <Grid templateColumns="repeat(2, 1fr)" gap={6}>
-        {/* Left Column: Guardian's Info */}
-        <GridItem colSpan={1}>
+      <Text>
+        <span style={{ color: "red" }}>*</span> means the field are required
+      </Text>
+      <Grid templateColumns="repeat(3, 1fr)" gap={5}>
+        <GridItem colSpan={1} border="1px solid white" p={10} rounded={"md"}>
+          <Text fontSize="xl" fontWeight="bold" mb={10}>
+            Guardian's Details
+          </Text>
           <FormControl mb={6}>
-            <FormLabel htmlFor="guardianName">Guardian's Name</FormLabel>
+            <FormLabel htmlFor="guardianName">
+              Guardian's Name <span style={{ color: "red" }}>*</span>
+            </FormLabel>
             <Input
               id="guardianName"
               {...register("guardianName", { required: true })}
@@ -100,7 +138,9 @@ const EnquiryForm = () => {
           </FormControl>
 
           <FormControl mb={6}>
-            <FormLabel htmlFor="phone">Phone</FormLabel>
+            <FormLabel htmlFor="phone">
+              Phone <span style={{ color: "red" }}>*</span>
+            </FormLabel>
             <Input
               id="phone"
               {...register("phone", { required: true })}
@@ -185,9 +225,14 @@ const EnquiryForm = () => {
         </GridItem>
 
         {/* Right Column: Student & Address Info */}
-        <GridItem colSpan={1}>
+        <GridItem colSpan={1} border="1px solid white" p={10} rounded={"md"}>
+          <Text fontSize="xl" fontWeight="bold" mb={10}>
+            Student's Details
+          </Text>
           <FormControl mb={6}>
-            <FormLabel htmlFor="studentFirstName">Student's First Name</FormLabel>
+            <FormLabel htmlFor="studentFirstName">
+              Student's First Name <span style={{ color: "red" }}>*</span>
+            </FormLabel>
             <Input
               id="studentFirstName"
               {...register("studentFirstName", { required: true })}
@@ -199,7 +244,9 @@ const EnquiryForm = () => {
           </FormControl>
 
           <FormControl mb={6}>
-            <FormLabel htmlFor="studentLastName">Student's Last Name</FormLabel>
+            <FormLabel htmlFor="studentLastName">
+              Student's Last Name <span style={{ color: "red" }}>*</span>
+            </FormLabel>
             <Input
               id="studentLastName"
               {...register("studentLastName", { required: true })}
@@ -209,45 +256,86 @@ const EnquiryForm = () => {
               _hover={{ bg: "gray.600" }}
             />
           </FormControl>
+          <FormControl mb={6}>
+            <FormLabel htmlFor="gender">
+              Gender <span style={{ color: "red" }}>*</span>
+            </FormLabel>
+            <RadioGroup defaultValue="female" defaultChecked="female">
+              <Stack direction={"column"}>
+                <Radio
+                  {...register("gender", { required: true })}
+                  value="male"
+                  colorScheme="red"
+                >
+                  Male
+                </Radio>
+                <Radio
+                  {...register("gender", { required: true })}
+                  value="female"
+                  colorScheme="red"
+                >
+                  Female
+                </Radio>
+                <Radio
+                  {...register("gender", { required: true })}
+                  value="other"
+                  colorScheme="red"
+                >
+                  Other
+                </Radio>
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+          <FormControl mb={6}>
+            <FormLabel htmlFor="grade">
+              Grade Applying For <span style={{ color: "red" }}>*</span>
+            </FormLabel>
+            <Controller
+              name="grade"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={gradeOptions}
+                  placeholder="Select a grade"
+                  value={
+                    field.value
+                      ? gradeOptions.find(
+                          (option) => option.value === field.value
+                        )
+                      : null
+                  } // Only set value if field.value is truthy
+                  onChange={(option) =>
+                    field.onChange(option ? option.value : null)
+                  } // Ensure value is null if no option selected
+                  styles={{
+                    control: (styles) => ({
+                      ...styles,
+                      backgroundColor: "#2d3748",
+                    }),
+                    option: (styles, { isSelected, isFocused }) => ({
+                      ...styles,
+                      backgroundColor: isSelected
+                        ? "#4a5568"
+                        : isFocused
+                        ? "#4a5568"
+                        : "#2d3748",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#4a5568",
+                      },
+                    }),
+                    singleValue: (styles) => ({ ...styles, color: "white" }),
+                  }}
+                />
+              )}
+            />
+          </FormControl>
 
           <FormControl mb={6}>
-  <FormLabel htmlFor="grade">Grade Applying For</FormLabel>
-  <Controller
-    name="grade"
-    control={control}
-    render={({ field }) => (
-      <Select
-        {...field}
-        options={gradeOptions}
-        placeholder="Select Grade"
-        value={gradeOptions.find((option) => option.value === field.value)} // Display selected value
-        onChange={(option) => field.onChange(option.value)} // Store only the value in form state
-        styles={{
-          control: (styles) => ({
-            ...styles,
-            backgroundColor: "#2d3748",
-          }),
-          option: (styles, { isSelected, isFocused }) => ({
-            ...styles,
-            backgroundColor: isSelected
-              ? "#4a5568"
-              : isFocused
-              ? "#4a5568"
-              : "#2d3748",
-            color: "white",
-            '&:hover': {
-              backgroundColor: "#4a5568",
-            },
-          }),
-          singleValue: (styles) => ({ ...styles, color: "white" }),
-        }}
-      />
-    )}
-  />
-</FormControl>
-
-          <FormControl mb={6}>
-            <FormLabel htmlFor="dob">Date of Birth</FormLabel>
+            <FormLabel htmlFor="dob">
+              Date of Birth <span style={{ color: "red" }}>*</span>
+            </FormLabel>
             <Input
               id="dob"
               {...register("dob", { required: true })}
@@ -258,6 +346,193 @@ const EnquiryForm = () => {
               _hover={{ bg: "gray.600" }}
             />
           </FormControl>
+          <FormControl mb={6}>
+            <FormLabel htmlFor="hostel">
+              Do you want to enroll for our Hostel{" "}
+              <span style={{ color: "red" }}>*</span>
+            </FormLabel>
+            <RadioGroup defaultValue="true" defaultChecked="true">
+              <Stack direction={"row"}>
+                <Radio
+                  {...register("hostel", { required: true })}
+                  value="true"
+                  colorScheme="red"
+                >
+                  Yes
+                </Radio>
+                <Radio
+                  {...register("hostel", { required: true })}
+                  value="false"
+                  colorScheme="red"
+                >
+                  No
+                </Radio>
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+        </GridItem>
+        <GridItem colSpan={1} border="1px solid white" p={10} rounded={"md"}>
+          <Text fontSize="xl" fontWeight="bold" mb={10}>
+            Address
+          </Text>
+          <FormControl mb={6}>
+            <FormLabel htmlFor="country">Countries</FormLabel>
+            <Controller
+              name="country"
+              control={control}
+              render={({ field }) => (
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    variant="filled"
+                    bg="gray.700"
+                    _hover={{ bg: "gray.600" }}
+                  >
+                    {field.value || "Select Country"}
+                  </MenuButton>
+                  <MenuList bg="#2d3748">
+                    {country.map((option) => (
+                      <MenuItem
+                        key={option}
+                        onClick={() => {
+                          field.onChange(option);
+                        }}
+                        bg="#2d3748"
+                        color="white"
+                        _hover={{ backgroundColor: "#4a5568" }}
+                      >
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Menu>
+              )}
+            />
+          </FormControl>
+
+          <FormControl mb={6}>
+            <FormLabel htmlFor="state">State</FormLabel>
+            <Controller
+              name="state"
+              control={control}
+              render={({ field }) => (
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    variant="filled"
+                    bg="gray.700"
+                    _hover={{ bg: "gray.600" }}
+                  >
+                    {field.value || "Select State"}
+                  </MenuButton>
+                  <MenuList bg="#2d3748">
+                    {states.map((option) => (
+                      <MenuItem
+                        key={option.state}
+                        onClick={() => {
+                          setSelectedState(option.state);
+                          field.onChange(option.state);
+                        }}
+                        bg="#2d3748"
+                        color="white"
+                        _hover={{ backgroundColor: "#4a5568" }}
+                      >
+                        {option.state}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Menu>
+              )}
+            />
+          </FormControl>
+
+          <FormControl mb={6}>
+            <FormLabel htmlFor="city">City</FormLabel>
+            <Controller
+              name="city"
+              control={control}
+              render={({ field }) => (
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    variant="filled"
+                    bg="gray.700"
+                    _hover={{ bg: "gray.600" }}
+                  >
+                    {field.value || "Select District"}
+                  </MenuButton>
+                  <MenuList bg="#2d3748">
+                    {states
+                      .find((state) => state.state === selectedState)
+                      ?.district.map((dist) => (
+                        <MenuItem
+                          key={dist}
+                          onClick={() => {
+                            setSelectedDist(dist);
+                            field.onChange(dist);
+                          }}
+                          bg="#2d3748"
+                          color="white"
+                          _hover={{ backgroundColor: "#4a5568" }}
+                        >
+                          {dist}
+                        </MenuItem>
+                      ))}
+                  </MenuList>
+                </Menu>
+              )}
+            />
+          </FormControl>
+
+          <FormLabel htmlFor="street">
+            street <span style={{ color: "red" }}>*</span>
+          </FormLabel>
+          <Input
+            id="street"
+            {...register("street", { required: true })}
+            variant="filled"
+            focusBorderColor="red.400"
+            bg="gray.700"
+            _hover={{ bg: "gray.600" }}
+          />
+          {/* <FormLabel htmlFor="city">city</FormLabel>
+            <Input
+              id="city"
+              {...register("city", { required: true })}
+              variant="filled"
+              focusBorderColor="red.400"
+              bg="gray.700"
+              _hover={{ bg: "gray.600" }}
+            /> */}
+          {/* <FormLabel htmlFor="state">state</FormLabel>
+            <Input
+              id="state"
+              {...register("state", { required: true })}
+              variant="filled"
+              focusBorderColor="red.400"
+              bg="gray.700"
+              _hover={{ bg: "gray.600" }}
+            /> */}
+          <FormLabel htmlFor="zip">
+            zip <span style={{ color: "red" }}>*</span>
+          </FormLabel>
+          <Input
+            id="zip"
+            {...register("zip", { required: true })}
+            variant="filled"
+            focusBorderColor="red.400"
+            bg="gray.700"
+            _hover={{ bg: "gray.600" }}
+          />
+          {/* <FormLabel htmlFor="country">country</FormLabel>
+            <Input
+              id="country"
+              {...register("country", { required: true })}
+              variant="filled"
+              focusBorderColor="red.400"
+              bg="gray.700"
+              _hover={{ bg: "gray.600" }}
+            /> */}
 
           <FormControl mb={6}>
             <FormLabel htmlFor="currentSchool">Current School</FormLabel>
@@ -272,7 +547,7 @@ const EnquiryForm = () => {
           </FormControl>
 
           <FormControl mb={6}>
-            <FormLabel htmlFor="description">Additional Information</FormLabel>
+            <FormLabel htmlFor="description">Description of Enquiry</FormLabel>
             <Textarea
               id="description"
               {...register("description")}
@@ -284,7 +559,7 @@ const EnquiryForm = () => {
         </GridItem>
       </Grid>
 
-      <Button type="submit" colorScheme="purple" variant="solid" w="full" mt={6}>
+      <Button type="submit" colorScheme="teal" variant="solid" w="full" mt={6}>
         Submit Enquiry
       </Button>
     </Box>
