@@ -17,9 +17,11 @@ import {
   Textarea,
   useToast,
 } from "@chakra-ui/react";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { SiGooglegemini } from "react-icons/si";
 import Select from "react-select";
 
 const states = [
@@ -50,12 +52,21 @@ const country = [
 ];
 
 const EnquiryForm = () => {
-  const { handleSubmit, register, control, reset } = useForm();
+  const { handleSubmit, register, control, reset, setValue } = useForm();
   const toast = useToast();
   const [selectedState, setSelectedState] = useState("");
   const [selectedDist, setSelectedDist] = useState("");
+  const [textArea, setTextArea] = useState("");
+  const [aiRes, setAIRes] = useState("");
+  const [showAIRes, setShowAIRes] = useState(false);
+
+  useEffect(() => {
+    setValue("description", showAIRes ? aiRes : textArea);
+  }, [aiRes, textArea, showAIRes, setValue]);
 
   const onSubmit = async (data) => {
+    const finalDescription = showAIRes ? aiRes : textArea;
+    data.description = finalDescription;
     // console.log(data);
     try {
       const res = await axios.post("http://localhost:5000/enquiry", data);
@@ -69,6 +80,8 @@ const EnquiryForm = () => {
       });
 
       reset();
+      setAIRes("");
+      setTextArea("");
     } catch (error) {
       toast({
         title: "Enquiry not submitted",
@@ -104,6 +117,21 @@ const EnquiryForm = () => {
     { value: "school fair", label: "School Fair" },
   ];
 
+  const genAI = new GoogleGenerativeAI(
+    "AIzaSyCV5D1rcZ3EN9sa0l7elScHMnawyAmEiUM"
+  );
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  async function genRes() {
+    const res =
+      await model.generateContent(`hey i am the parent of a child and i want to write an enquirt
+      description for a school(in their website) i want my child to get admitted in i wrote a raw description here, please enhance it
+      but dont add any water mark or formality text, i want to directly paste it, here is my desc: ${textArea}.
+      dont give any input fields with [] brackets, make it general, i am showing this response directly on the website `);
+    console.log(res.response.text());
+    setAIRes(res.response.text());
+    setShowAIRes(true);
+  }
+
   return (
     <Box
       as="form"
@@ -115,6 +143,7 @@ const EnquiryForm = () => {
       boxShadow="lg"
       m="auto"
     >
+      <button onClick={genRes}> get res</button>.
       <Text>
         <span style={{ color: "red" }}>*</span> means the field are required
       </Text>
@@ -548,17 +577,41 @@ const EnquiryForm = () => {
 
           <FormControl mb={6}>
             <FormLabel htmlFor="description">Description of Enquiry</FormLabel>
-            <Textarea
-              id="description"
-              {...register("description")}
-              bg="gray.700"
-              _hover={{ bg: "gray.600" }}
-              resize="none"
-            />
+            {showAIRes ? (
+              <>
+                <Textarea
+                  id="description"
+                  {...register("description")}
+                  bg="gray.700"
+                  _hover={{ bg: "gray.600" }}
+                  resize="none"
+                  setV
+                  value={aiRes}
+                  onChange={(e) => setAIRes(e.target.value)}
+                />
+                <Button onClick={() => setShowAIRes(false)} mt={4}>
+                  Switch to my Description
+                </Button>
+              </>
+            ) : (
+              <>
+                <Textarea
+                  id="description"
+                  {...register("description")}
+                  bg="gray.700"
+                  _hover={{ bg: "gray.600" }}
+                  resize="none"
+                  value={textArea}
+                  onChange={(e) => setTextArea(e.target.value)}
+                />
+                <Button onClick={genRes} mt={4}>
+                  Enhance with AI <SiGooglegemini />
+                </Button>
+              </>
+            )}
           </FormControl>
         </GridItem>
       </Grid>
-
       <Button type="submit" colorScheme="teal" variant="solid" w="full" mt={6}>
         Submit Enquiry
       </Button>
